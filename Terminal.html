@@ -1,0 +1,1719 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KSIP // System Operacyjny Policji</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --glass-bg: rgba(15, 23, 42, 0.85);
+            --glass-border: rgba(56, 189, 248, 0.2);
+            --glass-panel: rgba(30, 41, 59, 0.7);
+            --neon-blue: #38bdf8;
+            --neon-cyan: #22d3ee;
+            --neon-green: #34d399;
+            --neon-red: #f87171;
+            --neon-yellow: #fbbf24;
+            --neon-purple: #c084fc;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Nowoczesny pasek przewijania */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(15, 23, 42, 0.6);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(56, 189, 248, 0.3);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(56, 189, 248, 0.6);
+        }
+
+        body {
+            background: radial-gradient(circle at 50% 0%, #1e1b4b 0%, #090d16 60%, #020617 100%);
+            background-attachment: fixed;
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* Sekcje Liquid Glass z subtelną siatką tła */
+        .section {
+            padding: 40px 50px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            position: relative;
+        }
+
+        .section::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background-image: linear-gradient(to right, rgba(255,255,255,0.02) 1px, transparent 1px),
+                              linear-gradient(to bottom, rgba(255,255,255,0.02) 1px, transparent 1px);
+            background-size: 32px 32px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .section > * {
+            position: relative;
+            z-index: 1;
+        }
+
+        .police-section {
+            flex: 1.5;
+            border-bottom: 1px solid var(--glass-border);
+            background: radial-gradient(circle at top left, rgba(56, 189, 248, 0.12), transparent 50%);
+        }
+
+        .citizen-section {
+            flex: 1;
+            background: radial-gradient(circle at bottom right, rgba(52, 211, 153, 0.08), transparent 50%);
+        }
+
+        h1, h2, h3, h4, h5 { 
+            margin-top: 0; 
+            letter-spacing: -0.025em; 
+            font-weight: 700;
+        }
+        
+        h1 { font-size: 1.75rem; }
+        h2 { font-size: 1.5rem; }
+
+        .police-section h1 { 
+            color: var(--neon-blue); 
+            text-shadow: 0 0 25px rgba(56, 189, 248, 0.4); 
+            border-left: 4px solid var(--neon-blue);
+            padding-left: 12px;
+        }
+        .citizen-section h2 { 
+            color: var(--neon-green); 
+            text-shadow: 0 0 25px rgba(52, 211, 153, 0.4); 
+            border-left: 4px solid var(--neon-green);
+            padding-left: 12px;
+        }
+
+        /* Kontenery w stylu Glassmorphism */
+        .glass-box, .auth-box, .db-panel, .record-box {
+            background: var(--glass-panel);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            box-shadow: 0 16px 40px 0 rgba(0, 0, 0, 0.45);
+            transition: var(--transition-smooth);
+        }
+
+        /* Formularze i Inputy */
+        input, select, textarea {
+            background: rgba(15, 23, 42, 0.75);
+            border: 1px solid var(--glass-border);
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+            padding: 14px 18px;
+            margin: 6px 0 16px 0;
+            width: 100%;
+            max-width: 480px;
+            display: block;
+            outline: none;
+            border-radius: 12px;
+            box-sizing: border-box;
+            transition: var(--transition-smooth);
+            font-size: 0.95rem;
+        }
+
+        input:hover, select:hover, textarea:hover {
+            border-color: rgba(56, 189, 248, 0.4);
+        }
+
+        input:focus, select:focus, textarea:focus {
+            border-color: var(--neon-blue);
+            box-shadow: 0 0 20px rgba(56, 189, 248, 0.25);
+            background: rgba(15, 23, 42, 0.95);
+        }
+
+        label {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            font-weight: 600;
+            display: block;
+            margin-top: 8px;
+            letter-spacing: 0.02em;
+        }
+
+        button {
+            background: linear-gradient(135deg, rgba(56, 189, 248, 0.15), rgba(34, 211, 238, 0.25));
+            border: 1px solid var(--neon-blue);
+            color: var(--neon-blue);
+            padding: 12px 24px;
+            font-family: 'Inter', sans-serif;
+            font-weight: 600;
+            cursor: pointer;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 0.08em;
+            border-radius: 12px;
+            transition: var(--transition-smooth);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+            margin-right: 10px;
+            margin-bottom: 10px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        button:hover {
+            background: var(--neon-blue);
+            color: #090d16;
+            box-shadow: 0 0 25px rgba(56, 189, 248, 0.6);
+            transform: translateY(-2px);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .btn-small { padding: 9px 16px; font-size: 0.75rem; border-radius: 9px; margin: 0; }
+        .btn-danger { border-color: var(--neon-red); color: var(--neon-red); }
+        .btn-danger:hover { background: var(--neon-red); color: #090d16; box-shadow: 0 0 25px rgba(248, 113, 113, 0.6); }
+        .btn-success { border-color: var(--neon-green); color: var(--neon-green); }
+        .btn-success:hover { background: var(--neon-green); color: #090d16; box-shadow: 0 0 25px rgba(52, 211, 153, 0.6); }
+        .btn-purple { border-color: var(--neon-purple); color: var(--neon-purple); }
+        .btn-purple:hover { background: var(--neon-purple); color: #090d16; box-shadow: 0 0 25px rgba(192, 132, 252, 0.6); }
+
+        /* Zakładki (Tabs) */
+        .tabs-nav {
+            display: flex;
+            gap: 10px;
+            border-bottom: 1px solid var(--glass-border);
+            padding-bottom: 14px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+        }
+        .tab-btn {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid var(--glass-border);
+            color: var(--text-muted);
+            padding: 10px 18px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            transition: var(--transition-smooth);
+            margin: 0;
+        }
+        .tab-btn:hover {
+            border-color: var(--neon-blue);
+            color: var(--text-main);
+            background: rgba(56, 189, 248, 0.1);
+            box-shadow: none;
+            transform: none;
+        }
+        .tab-btn.active {
+            background: rgba(56, 189, 248, 0.2);
+            border-color: var(--neon-blue);
+            color: var(--neon-blue);
+            box-shadow: 0 0 15px rgba(56, 189, 248, 0.3);
+        }
+        .tab-pane {
+            display: none;
+            animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .tab-pane.active {
+            display: block;
+        }
+
+        /* Podsumowania finansowe/punktowe */
+        .summary-box {
+            display: flex;
+            gap: 20px;
+            background: rgba(15, 23, 42, 0.7);
+            border: 1px solid var(--glass-border);
+            padding: 20px;
+            border-radius: 14px;
+            margin-bottom: 20px;
+            box-shadow: inset 0 2px 8px rgba(0,0,0,0.3);
+        }
+        .summary-item {
+            flex: 1;
+            text-align: center;
+        }
+        .summary-item .val {
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-top: 6px;
+        }
+
+        /* Wiadomości statusowe */
+        .status-msg { margin-top: 8px; font-size: 0.9rem; min-height: 24px; font-weight: 500; }
+        .error { color: var(--neon-red); text-shadow: 0 0 12px rgba(248, 113, 113, 0.4); }
+        .success { color: var(--neon-green); text-shadow: 0 0 12px rgba(52, 211, 153, 0.4); }
+        .info { color: var(--neon-blue); text-shadow: 0 0 12px rgba(56, 189, 248, 0.4); }
+        .warning { color: var(--neon-yellow); text-shadow: 0 0 12px rgba(251, 191, 36, 0.4); }
+
+        /* Dashboard & Layout paneli */
+        #police-dashboard { display: none; }
+        .dashboard-nav { 
+            display: flex; 
+            flex-wrap: wrap; 
+            gap: 12px; 
+            border-bottom: 1px solid var(--glass-border); 
+            padding-bottom: 20px; 
+            margin-bottom: 30px; 
+        }
+
+        .db-panel { 
+            display: none; 
+            padding: 30px; 
+            max-width: 800px; 
+            animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .db-panel.active { display: block; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .record-box {
+            padding: 30px; 
+            margin-top: 25px; 
+            max-width: 750px;
+        }
+
+        .auth-container { display: flex; gap: 20px; flex-wrap: wrap; }
+        .auth-box { padding: 30px; width: 100%; max-width: 420px; }
+
+        .flex-row { display: flex; gap: 14px; align-items: center; max-width: 480px; }
+        .flex-row input { margin: 0; }
+
+        .badge-tag {
+            display: inline-flex;
+            align-items: center;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .badge-danger { background: rgba(248, 113, 113, 0.15); border: 1px solid var(--neon-red); color: var(--neon-red); box-shadow: 0 0 10px rgba(248, 113, 113, 0.15); }
+        .badge-success { background: rgba(52, 211, 153, 0.15); border: 1px solid var(--neon-green); color: var(--neon-green); box-shadow: 0 0 10px rgba(52, 211, 153, 0.15); }
+        .badge-warning { background: rgba(251, 191, 36, 0.15); border: 1px solid var(--neon-yellow); color: var(--neon-yellow); box-shadow: 0 0 10px rgba(251, 191, 36, 0.15); }
+        .badge-purple { background: rgba(192, 132, 252, 0.15); border: 1px solid var(--neon-purple); color: var(--neon-purple); box-shadow: 0 0 10px rgba(192, 132, 252, 0.15); }
+    </style>
+</head>
+<body>
+
+    <!-- GÓRA: SEKCJA POLICYJNA -->
+    <div class="section police-section">
+        <h1>[ KSIP.OS // SYSTEM OPERACYJNY POLICJI ]</h1>
+        
+        <!-- Kontener Autoryzacji -->
+        <div id="police-auth-section" class="auth-container">
+            <!-- LOGOWANIE -->
+            <div class="auth-box" id="login-box">
+                <h3 style="color:var(--neon-blue); display:flex; align-items:center; gap:8px;">
+                    <span style="width:8px; height:8px; background:var(--neon-blue); border-radius:50%; box-shadow:0 0 8px var(--neon-blue);"></span>
+                    [ LOGOWANIE OFICERA ]
+                </h3>
+                <input type="text" id="login-id" placeholder="Login (np. nr odznaki)">
+                <input type="password" id="login-pass" placeholder="Hasło dostępowe">
+                <button id="btn-login">Zaloguj do systemu</button>
+                <button id="btn-show-register" class="btn-small">Zarejestruj oficera</button>
+            </div>
+
+            <!-- REJESTRACJA -->
+            <div class="auth-box" id="register-box" style="display: none;">
+                <h3 style="color:var(--neon-blue); display:flex; align-items:center; gap:8px;">
+                    <span style="width:8px; height:8px; background:var(--neon-blue); border-radius:50%; box-shadow:0 0 8px var(--neon-blue);"></span>
+                    [ REJESTRACJA OFICERA ]
+                </h3>
+                <input type="text" id="reg-id" placeholder="Wymyśl Login">
+                <input type="password" id="reg-pass" placeholder="Wymyśl Hasło">
+                <button id="btn-register">Utwórz profil</button>
+                <button id="btn-show-login" class="btn-small">Wróć do logowania</button>
+            </div>
+        </div>
+        <div id="police-auth-msg" class="status-msg"></div>
+
+        <!-- Zalogowany Panel Policyjny -->
+        <div id="police-dashboard">
+            <p class="success" style="display:flex; align-items:center; gap:8px; margin-bottom:20px;">
+                <span style="width:8px; height:8px; background:var(--neon-green); border-radius:50%; box-shadow:0 0 8px var(--neon-green);"></span>
+                AUTORYZACJA POMYŚLNA. DOSTĘP DO BAZY OPERACYJNEJ AKTYWNY.
+            </p>
+            
+            <div class="dashboard-nav">
+                <button onclick="showPanel('panel-citizen')">Rejestruj Obywatela</button>
+                <button onclick="showPanel('panel-edit-citizen')">Szukaj / Edytuj Obywatela</button>
+                <button onclick="showPanel('panel-vehicle')">Rejestruj Pojazd</button>
+                <button onclick="showPanel('panel-edit-vehicle')">Szukaj / Edytuj Pojazd</button>
+                <button onclick="showPanel('panel-ticket')">Ewidencja Mandatów</button>
+                <button onclick="showPanel('panel-zarzuty')" class="btn-purple">Ewidencja Zarzutów (KW/KK)</button>
+                <button id="btn-logout" class="btn-danger" style="margin-left: auto;">Wyloguj sesję</button>
+            </div>
+
+            <!-- Panel 1: Rejestracja Obywatela -->
+            <div id="panel-citizen" class="db-panel active">
+                <h3 style="color:var(--neon-blue);">[ REJESTRACJA NOWEGO OBYWATELA ]</h3>
+                <input type="text" id="add-cit-imie" placeholder="Imię">
+                <input type="text" id="add-cit-nazwisko" placeholder="Nazwisko">
+                <input type="text" id="add-cit-pesel" placeholder="PESEL (11 cyfr)" maxlength="11">
+                <input type="text" id="add-cit-adres" placeholder="Adres zamieszkania">
+                
+                <label>Przypisane pojazdy (Nr Rej.):</label>
+                <input type="text" id="add-cit-pojazd" placeholder="np. KR12345 (lub wpisz po weryfikacji)">
+                <label>Weryfikuj i dodaj pojazd z bazy po numerze rejestracyjnym:</label>
+                <div class="flex-row">
+                    <input type="text" id="add-cit-link-rej" placeholder="Wprowadź nr rej. pojazdu">
+                    <button type="button" id="btn-add-cit-link" class="btn-small btn-success">Przypisz pojazd</button>
+                </div>
+                <div id="add-cit-link-msg" class="status-msg" style="margin-bottom: 10px;"></div>
+
+                <label>Status Prawa Jazdy:</label>
+                <select id="add-cit-pj">
+                    <option value="Aktywne">Aktywne</option>
+                    <option value="Nieaktywne">Nieaktywne</option>
+                </select>
+
+                <label>Status Operacyjny (Kartoteka):</label>
+                <select id="add-cit-status">
+                    <option value="Czysty">Czysty (Brak zastrzeżeń)</option>
+                    <option value="Poszukiwany listem gończym">Poszukiwany listem gończym</option>
+                    <option value="Obserwowany">Obserwowany</option>
+                    <option value="Zatrzymany">Zatrzymany</option>
+                </select>
+
+                <button id="btn-add-citizen">Zapisz obywatela w bazie</button>
+                <div id="msg-cit" class="status-msg"></div>
+            </div>
+
+            <!-- Panel 2: Wyszukiwanie i Edycja Obywatela -->
+            <div id="panel-edit-citizen" class="db-panel">
+                <h3 style="color:var(--neon-blue);">[ WYSZUKIWANIE I KARTOTEKA OBYWATELA ]</h3>
+                <label>Wprowadź PESEL poszukiwanej osoby:</label>
+                <div class="flex-row">
+                    <input type="text" id="edit-cit-search-pesel" placeholder="11 cyfr PESEL" maxlength="11">
+                    <button type="button" id="btn-edit-cit-fetch" class="btn-small">Pobierz kartotekę</button>
+                </div>
+                <div id="edit-cit-fetch-msg" class="status-msg" style="margin-bottom: 15px;"></div>
+
+                <div id="edit-cit-form-container" style="display: none;">
+                    <div class="tabs-nav">
+                        <button type="button" class="tab-btn active" onclick="switchCitizenTab('tab-citizen-data')">1. Dane Obywatela</button>
+                        <button type="button" class="tab-btn" onclick="switchCitizenTab('tab-vehicle-data')">2. Przypisany Pojazd</button>
+                        <button type="button" class="tab-btn" onclick="switchCitizenTab('tab-tickets-history')">3. Historia Mandatów i Zarzutów</button>
+                    </div>
+
+                    <!-- ZAKŁADKA 1 -->
+                    <div id="tab-citizen-data" class="tab-pane active">
+                        <h4 style="color:var(--neon-blue);">[ EDYCJA DANYCH OSOBOWYCH I IDENTYFIKATORA PESEL ]</h4>
+                        <input type="hidden" id="edit-cit-doc-id">
+                        
+                        <label>Imię:</label>
+                        <input type="text" id="edit-cit-imie">
+                        
+                        <label>Nazwisko:</label>
+                        <input type="text" id="edit-cit-nazwisko">
+                        
+                        <label>PESEL (Identyfikator główny):</label>
+                        <input type="text" id="edit-cit-pesel" maxlength="11">
+                        
+                        <label>Adres zamieszkania:</label>
+                        <input type="text" id="edit-cit-adres">
+                        
+                        <label>Przypisane pojazdy (Rejestracje):</label>
+                        <input type="text" id="edit-cit-pojazdy">
+                        
+                        <label>Przypisz kolejny pojazd z bazy po numerze rejestracyjnym:</label>
+                        <div class="flex-row">
+                            <input type="text" id="edit-cit-link-rej" placeholder="Wprowadź nr rej. pojazdu">
+                            <button type="button" id="btn-edit-cit-link" class="btn-small btn-success">Przypisz pojazd</button>
+                        </div>
+                        <div id="edit-cit-link-msg" class="status-msg" style="margin-bottom: 10px;"></div>
+                        
+                        <label>Status Prawa Jazdy:</label>
+                        <select id="edit-cit-pj">
+                            <option value="Aktywne">Aktywne</option>
+                            <option value="Nieaktywne">Nieaktywne</option>
+                        </select>
+
+                        <label>Status Operacyjny:</label>
+                        <select id="edit-cit-status">
+                            <option value="Czysty">Czysty (Brak zastrzeżeń)</option>
+                            <option value="Poszukiwany listem gończym">Poszukiwany listem gończym</option>
+                            <option value="Obserwowany">Obserwowany</option>
+                            <option value="Zatrzymany">Zatrzymany</option>
+                        </select>
+
+                        <button id="btn-save-citizen-changes" class="btn-success">Zapisz zmiany w danych obywatela</button>
+                        <div id="msg-edit-cit" class="status-msg"></div>
+                    </div>
+
+                    <!-- ZAKŁADKA 2 -->
+                    <div id="tab-vehicle-data" class="tab-pane">
+                        <h4 style="color:var(--neon-green);">[ EDYCJA WSZYSTKICH DANYCH PRZYPISANEGO POJAZDU ]</h4>
+                        <div id="vehicle-edit-wrapper">
+                            <input type="hidden" id="edit-veh-doc-id">
+                            
+                            <label>Marka pojazdu:</label>
+                            <input type="text" id="edit-veh-marka">
+                            
+                            <label>Model pojazdu:</label>
+                            <input type="text" id="edit-veh-model">
+                            
+                            <label>Numer Rejestracyjny (Klucz bazy):</label>
+                            <input type="text" id="edit-veh-rejestracja">
+                            
+                            <label>Kolor:</label>
+                            <input type="text" id="edit-veh-kolor">
+                            
+                            <label>Status Dowodu Rejestracyjnego:</label>
+                            <select id="edit-veh-dowod">
+                                <option value="Ważny">Ważny</option>
+                                <option value="Zatrzymany">Zatrzymany</option>
+                                <option value="Nieważny">Nieważny</option>
+                            </select>
+
+                            <button id="btn-save-vehicle-full-changes" class="btn-success">Zapisz WSZYSTKIE dane pojazdu</button>
+                            <div id="msg-edit-veh-full" class="status-msg"></div>
+                        </div>
+                    </div>
+
+                    <!-- ZAKŁADKA 3 -->
+                    <div id="tab-tickets-history" class="tab-pane">
+                        <h4 style="color:var(--neon-red);">[ HISTORIA SANKCJI: MANDATY ORAZ ZARZUTY KW / KK ]</h4>
+                        
+                        <div class="summary-box">
+                            <div class="summary-item">
+                                <span style="color: var(--text-muted); font-size: 0.8rem;">SUMA KWOT (MANDATY):</span>
+                                <div id="summary-total-pln" class="val" style="color: var(--neon-red);">0 PLN</div>
+                            </div>
+                            <div class="summary-item">
+                                <span style="color: var(--text-muted); font-size: 0.8rem;">SUMA PUNKTÓW KARNYCH (AKTUALNE):</span>
+                                <div id="summary-total-points" class="val" style="color: var(--neon-yellow);">0 pkt</div>
+                            </div>
+                        </div>
+
+                        <h5 style="color: var(--neon-blue); margin-top: 20px;">Mandaty Drogowe (Automatyczne wygaszanie punktów po 1 roku):</h5>
+                        <div id="citizen-tickets-list"></div>
+
+                        <h5 style="color: var(--neon-purple); margin-top: 20px;">Zarzuty formalne (KW / KK):</h5>
+                        <div id="citizen-charges-list"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Panel 3: Rejestracja Pojazdu -->
+            <div id="panel-vehicle" class="db-panel">
+                <h3 style="color:var(--neon-blue);">[ REJESTRACJA NOWEGO POJAZDU ]</h3>
+                <input type="text" id="add-veh-marka" placeholder="Marka (np. Audi)">
+                <input type="text" id="add-veh-model" placeholder="Model (np. A4)">
+                <input type="text" id="add-veh-rej" placeholder="Numer Rejestracyjny (np. KR12345)">
+                <input type="text" id="add-veh-kolor" placeholder="Kolor">
+                
+                <label>Status Dowodu Rejestracyjnego:</label>
+                <select id="add-veh-dowod">
+                    <option value="Ważny">Ważny</option>
+                    <option value="Zatrzymany">Zatrzymany</option>
+                    <option value="Nieważny">Nieważny</option>
+                </select>
+
+                <button id="btn-add-vehicle">Dodaj pojazd</button>
+                <div id="msg-veh" class="status-msg"></div>
+            </div>
+
+            <!-- Panel 4: Wyszukiwanie i Edycja Pojazdu -->
+            <div id="panel-edit-vehicle" class="db-panel">
+                <h3 style="color:var(--neon-blue);">[ WYSZUKIWANIE I MODYFIKACJA POJAZDU ]</h3>
+                <label>Numer Rejestracyjny:</label>
+                <div class="flex-row">
+                    <input type="text" id="edit-veh-search-rej" placeholder="Wprowadź numer rejestracyjny">
+                    <button type="button" id="btn-edit-veh-fetch" class="btn-small">Pobierz pojazd</button>
+                </div>
+                <div id="edit-veh-fetch-msg" class="status-msg" style="margin-bottom: 15px;"></div>
+
+                <div id="edit-veh-form-container" style="display: none;">
+                    <input type="hidden" id="standalone-edit-veh-doc-id">
+                    <label>Marka:</label>
+                    <input type="text" id="standalone-edit-veh-marka">
+                    <label>Model:</label>
+                    <input type="text" id="standalone-edit-veh-model">
+                    <label>Numer Rejestracyjny (z możliwością zmiany):</label>
+                    <input type="text" id="standalone-edit-veh-rej">
+                    <label>Kolor:</label>
+                    <input type="text" id="standalone-edit-veh-kolor">
+                    
+                    <label>Status Dowodu Rejestracyjnego:</label>
+                    <select id="standalone-edit-veh-dowod">
+                        <option value="Ważny">Ważny</option>
+                        <option value="Zatrzymany">Zatrzymany</option>
+                        <option value="Nieważny">Nieważny</option>
+                    </select>
+
+                    <button id="btn-save-standalone-vehicle-changes" class="btn-success">Zapisz modyfikacje pojazdu</button>
+                    <div id="msg-edit-standalone-veh" class="status-msg"></div>
+                </div>
+            </div>
+
+            <!-- Panel 5: Ewidencja Mandatów -->
+            <div id="panel-ticket" class="db-panel">
+                <h3 style="color:var(--neon-blue);">[ EWIDENCJA MANDATU / TARYFIKATOR ]</h3>
+                
+                <label>PESEL Obywatela:</label>
+                <div class="flex-row">
+                    <input type="text" id="add-tic-pesel" placeholder="11 cyfr PESEL" maxlength="11">
+                    <button type="button" id="btn-tic-fetch-pesel" class="btn-small">Pobierz dane</button>
+                </div>
+                <div id="tic-person-info" class="status-msg" style="margin-bottom: 5px;"></div>
+
+                <label style="margin-top: 10px;">Numer Rejestracyjny Pojazdu:</label>
+                <div class="flex-row">
+                    <input type="text" id="add-tic-rej" placeholder="Numer rejestracyjny">
+                    <button type="button" id="btn-tic-fetch-rej" class="btn-small">Pobierz pojazd</button>
+                </div>
+                <div id="tic-vehicle-info" class="status-msg" style="margin-bottom: 5px;"></div>
+
+                <label style="margin-top: 10px;">Wybierz wykroczenie z taryfikatora:</label>
+                <select id="add-tic-powod" style="max-width: 480px;">
+                    <option value="">-- Wybierz wykroczenie z listy --</option>
+                    <option value="Przekroczenie prędkości o 11-15 km/h|100 PLN / 3 pkt">Przekroczenie prędkości o 11-15 km/h (100 PLN / 3 pkt)</option>
+                    <option value="Przekroczenie prędkości o 16-20 km/h|200 PLN / 3 pkt">Przekroczenie prędkości o 16-20 km/h (200 PLN / 3 pkt)</option>
+                    <option value="Przekroczenie prędkości o 21-25 km/h|300 PLN / 5 pkt">Przekroczenie prędkości o 21-25 km/h (300 PLN / 5 pkt)</option>
+                    <option value="Przekroczenie prędkości o 26-30 km/h|400 PLN / 7 pkt">Przekroczenie prędkości o 26-30 km/h (400 PLN / 7 pkt)</option>
+                    <option value="Przekroczenie prędkości o 31-40 km/h|800 PLN / 9 pkt">Przekroczenie prędkości o 31-40 km/h (800 PLN / 9 pkt)</option>
+                    <option value="Przekroczenie prędkości o 41-50 km/h|1000 PLN / 11 pkt">Przekroczenie prędkości o 41-50 km/h (1000 PLN / 11 pkt)</option>
+                    <option value="Przekroczenie prędkości o 51-60 km/h|1500 PLN / 13 pkt">Przekroczenie prędkości o 51-60 km/h (1500 PLN / 13 pkt)</option>
+                    <option value="Niezastosowanie się do sygnalizatora świetlnego|500 PLN / 15 pkt">Niezastosowanie się do sygnalizatora świetlnego (500 PLN / 15 pkt)</option>
+                    <option value="Korzystanie z telefonu podczas jazdy|500 PLN / 12 pkt">Korzystanie z telefonu podczas jazdy (500 PLN / 12 pkt)</option>
+                    <option value="Brak zapiętych pasów bezpieczeństwa|100 PLN / 5 pkt">Brak zapiętych pasów bezpieczeństwa (100 PLN / 5 pkt)</option>
+                    <option value="Wyprzedzanie w niedozwolonym miejscu|1000 PLN / 15 pkt">Wyprzedzanie w niedozwolonym miejscu (1000 PLN / 15 pkt)</option>
+                    <option value="Nieustąpienie pierwszeństwa pieszemu na przejściu|1500 PLN / 15 pkt">Nieustąpienie pierwszeństwa pieszemu na przejściu (1500 PLN / 15 pkt)</option>
+                    <option value="Jazda bez wymaganego oświetlenia|200 PLN / 3 pkt">Jazda bez wymaganego oświetlenia (200 PLN / 3 pkt)</option>
+                    <option value="Kierowanie pojazdem w stanie po użyciu alkoholu|2500 PLN / 15 pkt">Kierowanie w stanie po użyciu alkoholu (2500 PLN / 15 pkt)</option>
+                </select>
+
+                <label>Kwota i Punkty karne (uzupełniane automatycznie):</label>
+                <input type="text" id="add-tic-kwota" placeholder="Wybierz wykroczenie powyżej" readonly style="background: rgba(0,0,0,0.5); cursor: not-allowed; max-width: 480px;">
+
+                <button id="btn-add-ticket" style="margin-top: 15px;">Zarejestruj Mandat</button>
+                <div id="msg-tic" class="status-msg"></div>
+            </div>
+
+            <!-- Panel 6: Ewidencja Zarzutów (KW / KK) -->
+            <div id="panel-zarzuty" class="db-panel">
+                <h3 style="color:var(--neon-purple);">[ EWIDENCJA ZARZUTÓW // KODEKS WYKROCZEŃ I KODEKS KARNY ]</h3>
+                
+                <label>PESEL Obywatela:</label>
+                <div class="flex-row">
+                    <input type="text" id="add-zarz-pesel" placeholder="11 cyfr PESEL" maxlength="11">
+                    <button type="button" id="btn-zarz-fetch-pesel" class="btn-small btn-purple">Pobierz dane</button>
+                </div>
+                <div id="zarz-person-info" class="status-msg" style="margin-bottom: 5px;"></div>
+
+                <label style="margin-top: 10px;">Kwalifikacja prawna:</label>
+                <select id="add-zarz-kodeks" style="max-width: 480px;">
+                    <option value="KW">KW - Kodeks Wykroczeń</option>
+                    <option value="KK">KK - Kodeks Karny</option>
+                </select>
+
+                <label>Wybierz artykuł i czyn z katalogu:</label>
+                <select id="add-zarz-katalog" style="max-width: 480px;">
+                    <option value="">-- Wybierz czyn z listy --</option>
+                    <option data-kod="KW" value="Art. 66 KW|Wywołanie fałszywego alarmu|Grzywna / Areszt / Ograniczenie wolności">Art. 66 KW - Wywołanie fałszywego alarmu</option>
+                    <option data-kod="KW" value="Art. 51 KW|Zakłócenie spokoju lub porządku publicznego (Chuligaństwo)|Areszt, ograniczenie wolności lub grzywna">Art. 51 KW - Zakłócenie spokoju lub porządku publicznego</option>
+                    <option data-kod="KW" value="Art. 119 KW|Kradzież lub przywłaszczenie mienia (do 800 PLN)|Areszt, ograniczenie wolności lub grzywna">Art. 119 KW - Kradzież mienia (do 800 PLN)</option>
+                    <option data-kod="KW" value="Art. 107 KW|Złośliwe niepokojenie lub dręczenie innej osoby|Ograniczenie wolności, grzywna do 1500 PLN">Art. 107 KW - Złośliwe niepokojenie</option>
+                    <option data-kod="KW" value="Art. 67 KW|Wystawienie na niebezpieczeństwo w miejscu publicznym|Grzywna lub nagana">Art. 67 KW - Stworzenie zagrożenia w miejscu publicznym</option>
+                    <option data-kod="KK" value="Art. 178a § 1 KK|Kierowanie pojazdem mechanicznym w stanie nietrzeźwości|Grzywna, ograniczenie wolności lub pozbawienie wolności do lat 3">Art. 178a § 1 KK - Kierowanie w stanie nietrzeźwości</option>
+                    <option data-kod="KK" value="Art. 278 § 1 KK|Kradzież cudzej rzeczy (powyżej 800 PLN)|Pozbawienie wolności od 3 miesięcy do lat 5">Art. 278 § 1 KK - Kradzież mienia</option>
+                    <option data-kod="KK" value="Art. 279 § 1 KK|Kradzież z włamaniem|Pozbawienie wolności od roku do lat 10">Art. 279 § 1 KK - Kradzież z włamaniem</option>
+                    <option data-kod="KK" value="Art. 158 § 1 KK|Udział w bójce lub pobiciu narażającym na utratę życia|Pozbawienie wolności do lat 3">Art. 158 § 1 KK - Bójka lub pobicie</option>
+                    <option data-kod="KK" value="Art. 286 § 1 KK|Oszustwo (osiągnięcie korzyści majątkowej przez wprowadzenie w błąd)|Pozbawienie wolności od 6 miesięcy do lat 8">Art. 286 § 1 KK - Oszustwo</option>
+                    <option data-kod="KK" value="Art. 244 KK|Niestosowanie się do orzeczonych środków karnych (np. zakaz prowadzenia)|Pozbawienie wolności do lat 5">Art. 244 KK - Złamanie zakazu sądowego</option>
+                </select>
+
+                <label>Szczegóły / Artykuł:</label>
+                <input type="text" id="add-zarz-art" placeholder="np. Art. 178a § 1 KK">
+
+                <label>Opis czynu i kwalifikacja:</label>
+                <textarea id="add-zarz-opis" placeholder="Szczegółowy opis zarzucanego czynu..." rows="3"></textarea>
+
+                <label>Zagrożenie ustawowe / Sanksja:</label>
+                <input type="text" id="add-zarz-kara" placeholder="np. Pozbawienie wolności do lat 3">
+
+                <button id="btn-add-zarzut" class="btn-purple" style="margin-top: 10px;">Zarejestruj Zarzut w Aktach</button>
+                <div id="msg-zarz" class="status-msg"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- DÓŁ: SEKCJA OBYWATELSKA (PORTAL Z ZAKŁADKAMI) -->
+    <div class="section citizen-section" id="citizen-portal-section">
+        <h2>[ PORTAL OBYWATELSKI // WERYFIKACJA KARTOTEKI ]</h2>
+        <p style="color: var(--text-muted); margin-bottom: 20px;">Wprowadź swój numer PESEL w celu weryfikacji tożsamości, statusu praw jazdy oraz historii mandatów i zarzutów.</p>
+        
+        <div class="flex-row" style="margin-bottom: 15px;">
+            <input type="text" id="citizen-pesel" placeholder="Wprowadź numer PESEL (11 cyfr)" maxlength="11" style="margin:0;">
+            <button id="btn-search" class="btn-success">Szukaj w aktach</button>
+        </div>
+        <div id="citizen-msg" class="status-msg"></div>
+
+        <div id="record-results" style="display: none;" class="record-box">
+            <!-- Wyniki wyszukiwania ładowane dynamicznie z zakładkami -->
+        </div>
+    </div>
+
+    <!-- Firebase SDKs -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
+        import { getFirestore, collection, addDoc, query, where, getDocs, updateDoc, deleteDoc, doc } 
+            from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAVTfLGlMzJ2PuoZtRJfWIsoSbW8wLacqM",
+            authDomain: "ksip-3c363.firebaseapp.com",
+            projectId: "ksip-3c363",
+            storageBucket: "ksip-3c363.firebasestorage.app",
+            messagingSenderId: "114010560933",
+            appId: "1:114010560933:web:17e51f45f6bbd17041b04c"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // UI & Nawigacja elementów
+        const authSection = document.getElementById('police-auth-section');
+        const loginBox = document.getElementById('login-box');
+        const registerBox = document.getElementById('register-box');
+        const dashboard = document.getElementById('police-dashboard');
+        const authMsg = document.getElementById('police-auth-msg');
+        const citizenPortalSection = document.getElementById('citizen-portal-section');
+
+        document.getElementById('btn-show-register').onclick = () => {
+            loginBox.style.display = 'none'; registerBox.style.display = 'block'; authMsg.textContent = '';
+        };
+        document.getElementById('btn-show-login').onclick = () => {
+            registerBox.style.display = 'none'; loginBox.style.display = 'block'; authMsg.textContent = '';
+        };
+
+        window.showPanel = function(panelId) {
+            document.querySelectorAll('.db-panel').forEach(p => p.classList.remove('active'));
+            document.getElementById(panelId).classList.add('active');
+        }
+
+        // Obsługa zakładek w panelu edycji oficera
+        window.switchCitizenTab = function(tabId) {
+            document.querySelectorAll('#panel-edit-citizen .tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('#panel-edit-citizen .tab-pane').forEach(p => p.classList.remove('active'));
+            
+            document.getElementById(tabId).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        // Obsługa zakładek w Portalu Obywatelskim
+        window.switchPortalTab = function(tabId) {
+            document.querySelectorAll('#record-results .tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('#record-results .tab-pane').forEach(p => p.classList.remove('active'));
+            
+            document.getElementById(tabId).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        // Funkcja pomocnicza do parsowania daty mandatu
+        function parseTicketDate(dateStr) {
+            if (!dateStr) return new Date(0);
+            if (dateStr.includes('.')) {
+                const parts = dateStr.split('.');
+                if (parts.length === 3) {
+                    return new Date(`${parts[2]}-${parts[1]}-${parts[0]}`);
+                }
+            }
+            return new Date(dateStr);
+        }
+
+        // Funkcja edycji mandatu dla policjanta
+        window.editMandate = async function(mandateDocId, pesel, currentPowod, currentKwota) {
+            const newPowod = prompt("Edytuj powód / wykroczenie:", currentPowod);
+            if(newPowod === null) return;
+            const newKwota = prompt("Edytuj kwotę i punkty (np. 500 PLN / 10 pkt):", currentKwota);
+            if(newKwota === null) return;
+
+            try {
+                const mandateRef = doc(db, "mandaty", mandateDocId);
+                await updateDoc(mandateRef, {
+                    powod: newPowod,
+                    kwota: newKwota
+                });
+                alert("Mandat został pomyślnie zaktualizowany.");
+                document.getElementById('edit-cit-search-pesel').value = pesel;
+                document.getElementById('btn-edit-cit-fetch').click();
+            } catch(e) {
+                console.error(e);
+                alert("Błąd podczas edycji mandatu.");
+            }
+        }
+
+        // Funkcja usuwania mandatu dla policjanta
+        window.deleteMandate = async function(mandateDocId, pesel) {
+            if(confirm("Czy na pewno chcesz trwale usunąć ten mandat z ewidencji?")) {
+                try {
+                    await deleteDoc(doc(db, "mandaty", mandateDocId));
+                    alert("Mandat został usunięty.");
+                    document.getElementById('edit-cit-search-pesel').value = pesel;
+                    document.getElementById('btn-edit-cit-fetch').click();
+                } catch(e) {
+                    console.error(e);
+                    alert("Błąd podczas usuwania mandatu.");
+                }
+            }
+        }
+
+        // --- NOWE FUNKCJE: Edycja i usuwanie zarzutów ---
+        window.editZarzut = async function(zarzutDocId, pesel, currentOpis, currentKara) {
+            const newOpis = prompt("Edytuj opis czynu:", currentOpis);
+            if(newOpis === null) return;
+            const newKara = prompt("Edytuj zagrożenie / karę:", currentKara);
+            if(newKara === null) return;
+
+            try {
+                const zarzutRef = doc(db, "zarzuty", zarzutDocId);
+                await updateDoc(zarzutRef, {
+                    opis: newOpis,
+                    kara: newKara
+                });
+                alert("Zarzut został pomyślnie zaktualizowany.");
+                document.getElementById('edit-cit-search-pesel').value = pesel;
+                document.getElementById('btn-edit-cit-fetch').click();
+            } catch(e) {
+                console.error(e);
+                alert("Błąd podczas edycji zarzutu.");
+            }
+        }
+
+        window.deleteZarzut = async function(zarzutDocId, pesel) {
+            if(confirm("Czy na pewno chcesz trwale usunąć ten zarzut z ewidencji?")) {
+                try {
+                    await deleteDoc(doc(db, "zarzuty", zarzutDocId));
+                    alert("Zarzut został pomyślnie usunięty.");
+                    document.getElementById('edit-cit-search-pesel').value = pesel;
+                    document.getElementById('btn-edit-cit-fetch').click();
+                } catch(e) {
+                    console.error(e);
+                    alert("Błąd podczas usuwania zarzutu.");
+                }
+            }
+        }
+        // ------------------------------------------------
+
+        // Funkcja wyszukiwania (filtrowania) mandatów po stronie obywatela
+        window.filterCitizenTickets = function() {
+            const queryVal = document.getElementById('citizen-ticket-search').value.toLowerCase().trim();
+            const cards = document.querySelectorAll('.citizen-ticket-card');
+            
+            cards.forEach(card => {
+                const text = card.getAttribute('data-search');
+                if(text.includes(queryVal)) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+
+        // Logowanie i Rejestracja Oficerów
+        document.getElementById('btn-register').addEventListener('click', async () => {
+            const login = document.getElementById('reg-id').value;
+            const pass = document.getElementById('reg-pass').value;
+            
+            if(!login || !pass) {
+                authMsg.textContent = "BŁĄD: Wprowadź login i hasło."; 
+                authMsg.className = "status-msg error"; return;
+            }
+
+            authMsg.textContent = "Zapisywanie profilu w bazie..."; 
+            authMsg.className = "status-msg info";
+
+            try {
+                const q = query(collection(db, "oficerowie"), where("login", "==", login));
+                const snap = await getDocs(q);
+                if(!snap.empty) {
+                    authMsg.textContent = "BŁĄD: Taki login oficera już istnieje!"; 
+                    authMsg.className = "status-msg error"; return;
+                }
+
+                await addDoc(collection(db, "oficerowie"), { login: login, haslo: pass });
+                authMsg.textContent = "Profil utworzony! Możesz się teraz zalogować."; 
+                authMsg.className = "status-msg success";
+                
+                document.getElementById('reg-id').value = '';
+                document.getElementById('reg-pass').value = '';
+                setTimeout(() => document.getElementById('btn-show-login').click(), 2000);
+            } catch(e) {
+                authMsg.textContent = "BŁĄD BAZY: Upewnij się, że reguły Firestore są odblokowane."; 
+                authMsg.className = "status-msg error";
+                console.error(e);
+            }
+        });
+
+        document.getElementById('btn-login').addEventListener('click', async () => {
+            const login = document.getElementById('login-id').value;
+            const pass = document.getElementById('login-pass').value;
+
+            authMsg.textContent = "Weryfikacja bazy danych..."; 
+            authMsg.className = "status-msg info";
+
+            try {
+                const q = query(collection(db, "oficerowie"), where("login", "==", login), where("haslo", "==", pass));
+                const snap = await getDocs(q);
+
+                if (!snap.empty) {
+                    authMsg.textContent = "";
+                    authSection.style.display = 'none';
+                    dashboard.style.display = 'block';
+                    citizenPortalSection.style.display = 'none';
+                } else {
+                    authMsg.textContent = "BŁĄD: Nieprawidłowy login lub hasło."; 
+                    authMsg.className = "status-msg error";
+                }
+            } catch(e) {
+                authMsg.textContent = "BŁĄD POŁĄCZENIA: Sprawdź reguły bazy Firestore."; 
+                authMsg.className = "status-msg error";
+                console.error(e);
+            }
+        });
+
+        document.getElementById('btn-logout').addEventListener('click', () => {
+            dashboard.style.display = 'none';
+            authSection.style.display = 'flex';
+            citizenPortalSection.style.display = 'flex';
+            document.getElementById('login-id').value = '';
+            document.getElementById('login-pass').value = '';
+            authMsg.textContent = "Wylogowano z systemu.";
+            authMsg.className = "status-msg success";
+        });
+
+        async function assignVehicleByReg(inputTargetId, regInputId, msgTargetId) {
+            const regVal = document.getElementById(regInputId).value.trim();
+            const msgEl = document.getElementById(msgTargetId);
+            const targetInput = document.getElementById(inputTargetId);
+
+            if(!regVal) {
+                msgEl.textContent = "Wprowadź numer rejestracyjny pojazdu.";
+                msgEl.className = "status-msg error";
+                return;
+            }
+
+            try {
+                const q = query(collection(db, "pojazdy"), where("rejestracja", "==", regVal));
+                const snap = await getDocs(q);
+                if(!snap.empty) {
+                    const vehData = snap.docs[0].data();
+                    let currentVal = targetInput.value.trim();
+                    if(currentVal && currentVal !== "Brak") {
+                        if(!currentVal.toUpperCase().includes(regVal.toUpperCase())) {
+                            targetInput.value = currentVal + ", " + vehData.rejestracja;
+                        }
+                    } else {
+                        targetInput.value = vehData.rejestracja;
+                    }
+                    msgEl.textContent = `Pomyślnie przypisano pojazd: ${vehData.marka} ${vehData.model} (${vehData.rejestracja})`;
+                    msgEl.className = "status-msg success";
+                    document.getElementById(regInputId).value = '';
+                } else {
+                    msgEl.textContent = "BŁĄD: Pojazd o takim numerze rejestracyjnym nie istnieje w bazie pojazdów!";
+                    msgEl.className = "status-msg error";
+                }
+            } catch(e) {
+                console.error(e);
+                msgEl.textContent = "Błąd podczas weryfikacji pojazdu.";
+                msgEl.className = "status-msg error";
+            }
+        }
+
+        document.getElementById('btn-add-cit-link').addEventListener('click', () => {
+            assignVehicleByReg('add-cit-pojazd', 'add-cit-link-rej', 'add-cit-link-msg');
+        });
+
+        document.getElementById('btn-edit-cit-link').addEventListener('click', () => {
+            assignVehicleByReg('edit-cit-pojazdy', 'edit-cit-link-rej', 'edit-cit-link-msg');
+        });
+
+        // Dodawanie obywatela
+        document.getElementById('btn-add-citizen').addEventListener('click', async () => {
+            const msg = document.getElementById('msg-cit');
+            const data = {
+                imie: document.getElementById('add-cit-imie').value,
+                nazwisko: document.getElementById('add-cit-nazwisko').value,
+                pesel: document.getElementById('add-cit-pesel').value.trim(),
+                adres: document.getElementById('add-cit-adres').value,
+                pojazdy: document.getElementById('add-cit-pojazd').value || "Brak",
+                prawoJazdy: document.getElementById('add-cit-pj').value,
+                status: document.getElementById('add-cit-status').value
+            };
+            if(!data.pesel || data.pesel.length !== 11) { msg.textContent="Błąd: Wymagany 11-cyfrowy PESEL"; msg.className="status-msg error"; return;}
+            
+            try {
+                await addDoc(collection(db, "kartoteki"), data);
+                msg.textContent = "Obywatel pomyślnie zarejestrowany."; msg.className = "status-msg success";
+                document.querySelectorAll('#panel-citizen input').forEach(i => i.value = '');
+                document.getElementById('add-cit-link-msg').textContent = '';
+            } catch(e) { msg.textContent = "Błąd zapisu."; msg.className = "status-msg error"; }
+        });
+
+        // Wyszukiwanie obywatela w panelu policyjnym
+        document.getElementById('btn-edit-cit-fetch').addEventListener('click', async () => {
+            const pesel = document.getElementById('edit-cit-search-pesel').value.trim();
+            const fetchMsg = document.getElementById('edit-cit-fetch-msg');
+            const formContainer = document.getElementById('edit-cit-form-container');
+
+            if(pesel.length !== 11) {
+                fetchMsg.textContent = "Podaj prawidłowy 11-cyfrowy PESEL.";
+                fetchMsg.className = "status-msg error";
+                formContainer.style.display = 'none';
+                return;
+            }
+
+            try {
+                const q = query(collection(db, "kartoteki"), where("pesel", "==", pesel));
+                const snap = await getDocs(q);
+                if(!snap.empty) {
+                    const docSnap = snap.docs[0];
+                    const d = docSnap.data();
+                    
+                    document.getElementById('edit-cit-doc-id').value = docSnap.id;
+                    document.getElementById('edit-cit-imie').value = d.imie || '';
+                    document.getElementById('edit-cit-nazwisko').value = d.nazwisko || '';
+                    document.getElementById('edit-cit-pesel').value = d.pesel || '';
+                    document.getElementById('edit-cit-adres').value = d.adres || '';
+                    document.getElementById('edit-cit-pojazdy').value = d.pojazdy || '';
+                    document.getElementById('edit-cit-pj').value = d.prawoJazdy || 'Aktywne';
+                    document.getElementById('edit-cit-status').value = d.status || 'Czysty';
+
+                    let firstPlate = (d.pojazdy && d.pojazdy !== "Brak") ? d.pojazdy.split(',')[0].trim() : "";
+                    if(firstPlate) {
+                        const qVeh = query(collection(db, "pojazdy"), where("rejestracja", "==", firstPlate));
+                        const snapVeh = await getDocs(qVeh);
+                        if(!snapVeh.empty) {
+                            const vDoc = snapVeh.docs[0];
+                            const vData = vDoc.data();
+                            document.getElementById('edit-veh-doc-id').value = vDoc.id;
+                            document.getElementById('edit-veh-marka').value = vData.marka || '';
+                            document.getElementById('edit-veh-model').value = vData.model || '';
+                            document.getElementById('edit-veh-rejestracja').value = vData.rejestracja || '';
+                            document.getElementById('edit-veh-kolor').value = vData.kolor || '';
+                            document.getElementById('edit-veh-dowod').value = vData.statusDowodu || 'Ważny';
+                        } else {
+                            clearVehicleTabFields("Brak pojazdu w bazie o podanej rejestracji");
+                        }
+                    } else {
+                        clearVehicleTabFields("Brak przypisanych pojazdów w kartotece");
+                    }
+
+                    const qTickets = query(collection(db, "mandaty"), where("pesel", "==", pesel));
+                    const snapTickets = await getDocs(qTickets);
+                    
+                    let ticketsListHtml = "";
+                    let totalPln = 0;
+                    let totalPoints = 0;
+
+                    if(!snapTickets.empty) {
+                        snapTickets.forEach(tDoc => {
+                            const t = tDoc.data();
+                            const tId = tDoc.id;
+                            let kwotaStr = t.kwota || "0 PLN";
+                            let priceMatch = kwotaStr.match(/(\d+)/);
+                            let amountNum = priceMatch ? parseInt(priceMatch[1]) : 0;
+                            totalPln += amountNum;
+
+                            let pointsNum = 0;
+                            let fullText = (t.powod || "") + " " + (t.kwota || "");
+                            let ptsMatch = fullText.match(/(\d+)\s*pkt/i);
+                            if(ptsMatch) {
+                                pointsNum = parseInt(ptsMatch[1]);
+                            }
+
+                            const issueDate = parseTicketDate(t.data_wystawienia);
+                            const oneYearAgo = new Date();
+                            oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
+                            const isPointsExpired = issueDate < oneYearAgo;
+
+                            let effectivePoints = isPointsExpired ? 0 : pointsNum;
+                            totalPoints += effectivePoints;
+
+                            let escapedPowod = (t.powod || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+                            let escapedKwota = (t.kwota || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+
+                            ticketsListHtml += `
+                                <div style="background: rgba(248, 113, 113, 0.05); padding: 14px; margin-bottom: 12px; border-left: 3px solid var(--neon-red); border-radius: 10px;">
+                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                                        <span style="font-size: 0.75rem; color: var(--text-muted);"><strong>Data:</strong> ${t.data_wystawienia || 'Brak daty'}</span>
+                                        <div>
+                                            <button type="button" class="btn-small" onclick="editMandate('${tId}', '${pesel}', '${escapedPowod}', '${escapedKwota}')">Edytuj</button>
+                                            <button type="button" class="btn-small btn-danger" onclick="deleteMandate('${tId}', '${pesel}')">Usuń</button>
+                                        </div>
+                                    </div>
+                                    <p style="margin: 0 0 4px 0;"><strong>Pojazd:</strong> ${t.rejestracja}</p>
+                                    <p style="margin: 0 0 4px 0;"><strong>Wykroczenie:</strong> ${t.powod}</p>
+                                    <p style="margin: 0;"><strong>Sankcja:</strong> ${t.kwota} ${pointsNum > 0 ? (isPointsExpired ? `<span style="color: var(--neon-yellow); margin-left: 8px;">(Punkty wygasłe po 1 roku: 0 / ${pointsNum} pkt)</span>` : `(Punkty: ${pointsNum} pkt)`) : ''}</p>
+                                </div>
+                            `;
+                        });
+                    } else {
+                        ticketsListHtml = `<p style="color:var(--neon-green);">Brak wystawionych mandatów drogowych.</p>`;
+                    }
+
+                    document.getElementById('summary-total-pln').textContent = totalPln + " PLN";
+                    document.getElementById('summary-total-points').textContent = totalPoints + " pkt";
+                    document.getElementById('citizen-tickets-list').innerHTML = ticketsListHtml;
+
+                    const qCharges = query(collection(db, "zarzuty"), where("pesel", "==", pesel));
+                    const snapCharges = await getDocs(qCharges);
+                    let chargesListHtml = "";
+
+                    // --- ZAKTUALIZOWANE RENDEROWANIE ZARZUTÓW Z PRZYCISKAMI ---
+                    if(!snapCharges.empty) {
+                        snapCharges.forEach(cDoc => {
+                            const c = cDoc.data();
+                            const cId = cDoc.id;
+                            let badgeClass = c.kodeks === 'KK' ? 'badge-danger' : 'badge-warning';
+                            
+                            let escapedOpis = (c.opis || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+                            let escapedKara = (c.kara || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+
+                            chargesListHtml += `
+                                <div style="background: rgba(192, 132, 252, 0.05); padding: 14px; margin-bottom: 12px; border-left: 3px solid var(--neon-purple); border-radius: 10px;">
+                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                                        <div>
+                                            <span class="badge-tag ${badgeClass}">${c.kodeks} - ${c.art}</span>
+                                            <span style="font-size: 0.75rem; color: var(--text-muted); margin-left: 10px;">${c.data_wystawienia}</span>
+                                        </div>
+                                        <div>
+                                            <button type="button" class="btn-small btn-purple" onclick="editZarzut('${cId}', '${pesel}', '${escapedOpis}', '${escapedKara}')">Edytuj</button>
+                                            <button type="button" class="btn-small btn-danger" onclick="deleteZarzut('${cId}', '${pesel}')">Usuń</button>
+                                        </div>
+                                    </div>
+                                    <p style="margin: 0 0 4px 0;"><strong>Czyn:</strong> ${c.opis}</p>
+                                    <p style="margin: 0;"><strong>Zagrożenie / Kara:</strong> ${c.kara}</p>
+                                </div>
+                            `;
+                        });
+                    } else {
+                        chargesListHtml = `<p style="color:var(--neon-green);">Brak zarejestrowanych zarzutów z KW / KK.</p>`;
+                    }
+                    document.getElementById('citizen-charges-list').innerHTML = chargesListHtml;
+
+                    fetchMsg.textContent = `Pomyślnie wczytano pełną kartotekę: ${d.imie} ${d.nazwisko}`;
+                    fetchMsg.className = "status-msg success";
+                    formContainer.style.display = 'block';
+                    document.getElementById('edit-cit-link-msg').textContent = '';
+                } else {
+                    fetchMsg.textContent = "Nie znaleziono obywatela o takim numerze PESEL.";
+                    fetchMsg.className = "status-msg error";
+                    formContainer.style.display = 'none';
+                }
+            } catch(e) {
+                console.error(e);
+                fetchMsg.textContent = "Błąd podczas pobierania kartoteki.";
+                fetchMsg.className = "status-msg error";
+            }
+        });
+
+        function clearVehicleTabFields(msg) {
+            document.getElementById('edit-veh-doc-id').value = '';
+            document.getElementById('edit-veh-marka').value = '';
+            document.getElementById('edit-veh-model').value = '';
+            document.getElementById('edit-veh-rejestracja').value = '';
+            document.getElementById('edit-veh-kolor').value = '';
+            document.getElementById('msg-edit-veh-full').textContent = msg;
+            document.getElementById('msg-edit-veh-full').className = "status-msg warning";
+        }
+
+        document.getElementById('btn-save-citizen-changes').addEventListener('click', async () => {
+            const docId = document.getElementById('edit-cit-doc-id').value;
+            const msgEdit = document.getElementById('msg-edit-cit');
+            const newPesel = document.getElementById('edit-cit-pesel').value.trim();
+
+            if(!newPesel || newPesel.length !== 11) {
+                msgEdit.textContent = "BŁĄD: Numer PESEL musi składać się z 11 cyfr.";
+                msgEdit.className = "status-msg error";
+                return;
+            }
+
+            const updatedData = {
+                imie: document.getElementById('edit-cit-imie').value,
+                nazwisko: document.getElementById('edit-cit-nazwisko').value,
+                pesel: newPesel,
+                adres: document.getElementById('edit-cit-adres').value,
+                pojazdy: document.getElementById('edit-cit-pojazdy').value,
+                prawoJazdy: document.getElementById('edit-cit-pj').value,
+                status: document.getElementById('edit-cit-status').value
+            };
+
+            try {
+                const citizenRef = doc(db, "kartoteki", docId);
+                await updateDoc(citizenRef, updatedData);
+                msgEdit.textContent = "Dane obywatela i numer PESEL zostały zaktualizowane pomyślnie.";
+                msgEdit.className = "status-msg success";
+                document.getElementById('edit-cit-search-pesel').value = newPesel;
+            } catch(e) {
+                console.error(e);
+                msgEdit.textContent = "Błąd podczas zapisywania modyfikacji.";
+                msgEdit.className = "status-msg error";
+            }
+        });
+
+        document.getElementById('btn-save-vehicle-full-changes').addEventListener('click', async () => {
+            const vDocId = document.getElementById('edit-veh-doc-id').value;
+            const msgVehFull = document.getElementById('msg-edit-veh-full');
+            const newRej = document.getElementById('edit-veh-rejestracja').value.trim();
+
+            if(!vDocId) {
+                msgVehFull.textContent = "BŁĄD: Brak załadowanego pojazdu do edycji.";
+                msgVehFull.className = "status-msg error";
+                return;
+            }
+            if(!newRej) {
+                msgVehFull.textContent = "BŁĄD: Numer rejestracyjny nie może być pusty.";
+                msgVehFull.className = "status-msg error";
+                return;
+            }
+
+            const updatedVehicleData = {
+                marka: document.getElementById('edit-veh-marka').value,
+                model: document.getElementById('edit-veh-model').value,
+                rejestracja: newRej,
+                kolor: document.getElementById('edit-veh-kolor').value,
+                statusDowodu: document.getElementById('edit-veh-dowod').value
+            };
+
+            try {
+                const vehRef = doc(db, "pojazdy", vDocId);
+                await updateDoc(vehRef, updatedVehicleData);
+                msgVehFull.textContent = "Wszystkie dane pojazdu zostały pomyślnie zaktualizowane.";
+                msgVehFull.className = "status-msg success";
+            } catch(e) {
+                console.error(e);
+                msgVehFull.textContent = "Błąd podczas zapisywania danych pojazdu.";
+                msgVehFull.className = "status-msg error";
+            }
+        });
+
+        document.getElementById('btn-add-vehicle').addEventListener('click', async () => {
+            const msg = document.getElementById('msg-veh');
+            const data = {
+                marka: document.getElementById('add-veh-marka').value,
+                model: document.getElementById('add-veh-model').value,
+                rejestracja: document.getElementById('add-veh-rej').value.trim(),
+                kolor: document.getElementById('add-veh-kolor').value,
+                statusDowodu: document.getElementById('add-veh-dowod').value
+            };
+            if(!data.rejestracja) { msg.textContent="Błąd: Wymagany numer rejestracyjny."; msg.className="status-msg error"; return;}
+
+            try {
+                await addDoc(collection(db, "pojazdy"), data);
+                msg.textContent = "Pojazd dodany do rejestru."; msg.className = "status-msg success";
+                document.querySelectorAll('#panel-vehicle input').forEach(i => i.value = '');
+            } catch(e) { msg.textContent = "Błąd zapisu."; msg.className = "status-msg error"; }
+        });
+
+        document.getElementById('btn-edit-veh-fetch').addEventListener('click', async () => {
+            const rej = document.getElementById('edit-veh-search-rej').value.trim();
+            const fetchMsg = document.getElementById('edit-veh-fetch-msg');
+            const formContainer = document.getElementById('edit-veh-form-container');
+
+            if(!rej) {
+                fetchMsg.textContent = "Wprowadź numer rejestracyjny pojazdu.";
+                fetchMsg.className = "status-msg error";
+                formContainer.style.display = 'none';
+                return;
+            }
+
+            try {
+                const q = query(collection(db, "pojazdy"), where("rejestracja", "==", rej));
+                const snap = await getDocs(q);
+                if(!snap.empty) {
+                    const docSnap = snap.docs[0];
+                    const d = docSnap.data();
+
+                    document.getElementById('standalone-edit-veh-doc-id').value = docSnap.id;
+                    document.getElementById('standalone-edit-veh-marka').value = d.marka || '';
+                    document.getElementById('standalone-edit-veh-model').value = d.model || '';
+                    document.getElementById('standalone-edit-veh-rej').value = d.rejestracja || '';
+                    document.getElementById('standalone-edit-veh-kolor').value = d.kolor || '';
+                    document.getElementById('standalone-edit-veh-dowod').value = d.statusDowodu || 'Ważny';
+
+                    fetchMsg.textContent = `Pomyślnie wczytano pojazd: ${d.marka} ${d.model}`;
+                    fetchMsg.className = "status-msg success";
+                    formContainer.style.display = 'block';
+                } else {
+                    fetchMsg.textContent = "Nie znaleziono pojazdu o tym numerze rejestracyjnym.";
+                    fetchMsg.className = "status-msg error";
+                    formContainer.style.display = 'none';
+                }
+            } catch(e) {
+                console.error(e);
+                fetchMsg.textContent = "Błąd podczas pobierania pojazdu.";
+                fetchMsg.className = "status-msg error";
+            }
+        });
+
+        document.getElementById('btn-save-standalone-vehicle-changes').addEventListener('click', async () => {
+            const docId = document.getElementById('standalone-edit-veh-doc-id').value;
+            const msgEdit = document.getElementById('msg-edit-standalone-veh');
+            const newRej = document.getElementById('standalone-edit-veh-rej').value.trim();
+
+            if(!newRej) {
+                msgEdit.textContent = "BŁĄD: Numer rejestracyjny nie może być pusty.";
+                msgEdit.className = "status-msg error";
+                return;
+            }
+
+            const updatedData = {
+                marka: document.getElementById('standalone-edit-veh-marka').value,
+                model: document.getElementById('standalone-edit-veh-model').value,
+                rejestracja: newRej,
+                kolor: document.getElementById('standalone-edit-veh-kolor').value,
+                statusDowodu: document.getElementById('standalone-edit-veh-dowod').value
+            };
+
+            try {
+                const vehicleRef = doc(db, "pojazdy", docId);
+                await updateDoc(vehicleRef, updatedData);
+                msgEdit.textContent = "Dane pojazdu i numer rejestracyjny zostały zaktualizowane.";
+                msgEdit.className = "status-msg success";
+                document.getElementById('edit-veh-search-rej').value = newRej;
+            } catch(e) {
+                console.error(e);
+                msgEdit.textContent = "Błąd podczas aktualizacji pojazdu.";
+                msgEdit.className = "status-msg error";
+            }
+        });
+
+        document.getElementById('btn-tic-fetch-pesel').addEventListener('click', async () => {
+            const pesel = document.getElementById('add-tic-pesel').value.trim();
+            const infoDiv = document.getElementById('tic-person-info');
+            if(pesel.length !== 11) {
+                infoDiv.textContent = "BŁĄD: Podaj poprawny 11-cyfrowy PESEL.";
+                infoDiv.className = "status-msg error";
+                return;
+            }
+            try {
+                const q = query(collection(db, "kartoteki"), where("pesel", "==", pesel));
+                const snap = await getDocs(q);
+                if(!snap.empty) {
+                    const data = snap.docs[0].data();
+                    infoDiv.textContent = `Pobrano: ${data.imie} ${data.nazwisko} (PJ: ${data.prawoJazdy || 'Brak danych'})`;
+                    infoDiv.className = "status-msg success";
+                } else {
+                    infoDiv.textContent = "Nie znaleziono osoby o takim PESEL w bazie kartotek!";
+                    infoDiv.className = "status-msg error";
+                }
+            } catch(e) {
+                infoDiv.textContent = "Błąd podczas pobierania danych.";
+                infoDiv.className = "status-msg error";
+            }
+        });
+
+        document.getElementById('btn-tic-fetch-rej').addEventListener('click', async () => {
+            const rej = document.getElementById('add-tic-rej').value.trim();
+            const infoDiv = document.getElementById('tic-vehicle-info');
+            if(!rej) {
+                infoDiv.textContent = "BŁĄD: Podaj numer rejestracyjny pojazdu.";
+                infoDiv.className = "status-msg error";
+                return;
+            }
+            try {
+                const q = query(collection(db, "pojazdy"), where("rejestracja", "==", rej));
+                const snap = await getDocs(q);
+                if(!snap.empty) {
+                    const data = snap.docs[0].data();
+                    infoDiv.textContent = `Pobrano: ${data.marka} ${data.model} (Dowód: ${data.statusDowodu || 'Ważny'})`;
+                    infoDiv.className = "status-msg success";
+                } else {
+                    infoDiv.textContent = "Nie znaleziono pojazdu o tym numerze rejestracyjnym!";
+                    infoDiv.className = "status-msg error";
+                }
+            } catch(e) {
+                infoDiv.textContent = "Błąd podczas pobierania pojazdu.";
+                infoDiv.className = "status-msg error";
+            }
+        });
+
+        document.getElementById('add-tic-powod').addEventListener('change', (e) => {
+            const val = e.target.value;
+            if(val) {
+                const parts = val.split('|');
+                document.getElementById('add-tic-kwota').value = parts[1];
+            } else {
+                document.getElementById('add-tic-kwota').value = '';
+            }
+        });
+
+        document.getElementById('btn-add-ticket').addEventListener('click', async () => {
+            const msg = document.getElementById('msg-tic');
+            const selectEl = document.getElementById('add-tic-powod');
+            const selectVal = selectEl.value;
+
+            let powodText = "";
+            if(selectVal) {
+                powodText = selectVal.split('|')[0];
+            }
+
+            const data = {
+                pesel: document.getElementById('add-tic-pesel').value.trim(),
+                rejestracja: document.getElementById('add-tic-rej').value.trim(),
+                powod: powodText,
+                kwota: document.getElementById('add-tic-kwota').value,
+                data_wystawienia: new Date().toLocaleDateString()
+            };
+
+            if(!data.pesel || data.pesel.length !== 11) { 
+                msg.textContent="Błąd: Wymagany jest 11-cyfrowy PESEL obywatela."; 
+                msg.className="status-msg error"; 
+                return;
+            }
+            if(!data.rejestracja) { 
+                msg.textContent="Błąd: Wymagany jest numer rejestracyjny pojazdu."; 
+                msg.className="status-msg error"; 
+                return;
+            }
+            if(!data.powod) { 
+                msg.textContent="Błąd: Wybierz wykroczenie z taryfikatora."; 
+                msg.className="status-msg error"; 
+                return;
+            }
+
+            try {
+                await addDoc(collection(db, "mandaty"), data);
+                msg.textContent = "Mandat pomyślnie zarejestrowany w systemie."; 
+                msg.className = "status-msg success";
+                
+                document.getElementById('add-tic-pesel').value = '';
+                document.getElementById('add-tic-rej').value = '';
+                selectEl.value = '';
+                document.getElementById('add-tic-kwota').value = '';
+                document.getElementById('tic-person-info').textContent = '';
+                document.getElementById('tic-vehicle-info').textContent = '';
+            } catch(e) { 
+                msg.textContent = "Błąd zapisu mandatu."; 
+                msg.className = "status-msg error"; 
+            }
+        });
+
+        document.getElementById('btn-zarz-fetch-pesel').addEventListener('click', async () => {
+            const pesel = document.getElementById('add-zarz-pesel').value.trim();
+            const infoDiv = document.getElementById('zarz-person-info');
+            if(pesel.length !== 11) {
+                infoDiv.textContent = "BŁĄD: Podaj poprawny 11-cyfrowy PESEL.";
+                infoDiv.className = "status-msg error";
+                return;
+            }
+            try {
+                const q = query(collection(db, "kartoteki"), where("pesel", "==", pesel));
+                const snap = await getDocs(q);
+                if(!snap.empty) {
+                    const data = snap.docs[0].data();
+                    infoDiv.textContent = `Pobrano: ${data.imie} ${data.nazwisko} (Status: ${data.status})`;
+                    infoDiv.className = "status-msg success";
+                } else {
+                    infoDiv.textContent = "Nie znaleziono osoby o takim PESEL w bazie kartotek!";
+                    infoDiv.className = "status-msg error";
+                }
+            } catch(e) {
+                infoDiv.textContent = "Błąd podczas pobierania danych.";
+                infoDiv.className = "status-msg error";
+            }
+        });
+
+        document.getElementById('add-zarz-katalog').addEventListener('change', (e) => {
+            const val = e.target.value;
+            if(val) {
+                const parts = val.split('|');
+                document.getElementById('add-zarz-art').value = parts[0];
+                document.getElementById('add-zarz-opis').value = parts[1];
+                document.getElementById('add-zarz-kara').value = parts[2];
+
+                if(parts[0].includes('KK')) {
+                    document.getElementById('add-zarz-kodeks').value = 'KK';
+                } else if(parts[0].includes('KW')) {
+                    document.getElementById('add-zarz-kodeks').value = 'KW';
+                }
+            } else {
+                document.getElementById('add-zarz-art').value = '';
+                document.getElementById('add-zarz-opis').value = '';
+                document.getElementById('add-zarz-kara').value = '';
+            }
+        });
+
+        document.getElementById('btn-add-zarzut').addEventListener('click', async () => {
+            const msg = document.getElementById('msg-zarz');
+            const data = {
+                pesel: document.getElementById('add-zarz-pesel').value.trim(),
+                kodeks: document.getElementById('add-zarz-kodeks').value,
+                art: document.getElementById('add-zarz-art').value.trim(),
+                opis: document.getElementById('add-zarz-opis').value.trim(),
+                kara: document.getElementById('add-zarz-kara').value.trim(),
+                data_wystawienia: new Date().toLocaleDateString()
+            };
+
+            if(!data.pesel || data.pesel.length !== 11) {
+                msg.textContent = "BŁĄD: Wymagany 11-cyfrowy PESEL obywatela.";
+                msg.className = "status-msg error";
+                return;
+            }
+            if(!data.art || !data.opis) {
+                msg.textContent = "BŁĄD: Artykuł oraz opis czynu nie mogą być puste.";
+                msg.className = "status-msg error";
+                return;
+            }
+
+            try {
+                await addDoc(collection(db, "zarzuty"), data);
+                msg.textContent = "Zarzut formalny został pomyślnie zarejestrowany w systemie.";
+                msg.className = "status-msg success";
+
+                document.getElementById('add-zarz-pesel').value = '';
+                document.getElementById('add-zarz-art').value = '';
+                document.getElementById('add-zarz-opis').value = '';
+                document.getElementById('add-zarz-kara').value = '';
+                document.getElementById('add-zarz-katalog').value = '';
+                document.getElementById('zarz-person-info').textContent = '';
+            } catch(e) {
+                console.error(e);
+                msg.textContent = "Błąd podczas zapisu zarzutu.";
+                msg.className = "status-msg error";
+            }
+        });
+
+        // SEKCJA OBYWATELA (PORTAL OBYWATELSKI Z 3 ZAKŁADKAMI)
+        const btnSearch = document.getElementById('btn-search');
+        const citizenMsg = document.getElementById('citizen-msg');
+        const resultsBox = document.getElementById('record-results');
+
+        btnSearch.addEventListener('click', async () => {
+            const pesel = document.getElementById('citizen-pesel').value.trim();
+            if (pesel.length !== 11 || isNaN(pesel)) {
+                citizenMsg.textContent = "BŁĄD: PESEL musi składać się z 11 cyfr.";
+                citizenMsg.className = "status-msg error"; resultsBox.style.display = 'none'; return;
+            }
+
+            citizenMsg.textContent = "Wyszukiwanie w aktach..."; citizenMsg.className = "status-msg info";
+            resultsBox.style.display = 'none';
+
+            try {
+                const qCitizen = query(collection(db, "kartoteki"), where("pesel", "==", pesel));
+                const snapCitizen = await getDocs(qCitizen);
+
+                const qTickets = query(collection(db, "mandaty"), where("pesel", "==", pesel));
+                const snapTickets = await getDocs(qTickets);
+
+                const qCharges = query(collection(db, "zarzuty"), where("pesel", "==", pesel));
+                const snapCharges = await getDocs(qCharges);
+
+                if (snapCitizen.empty && snapTickets.empty && snapCharges.empty) {
+                    citizenMsg.textContent = "Kartoteka czysta. Brak notowań w systemie.";
+                    citizenMsg.className = "status-msg success";
+                } else {
+                    citizenMsg.textContent = "Znaleziono wpisy powiązane z podanym numerem PESEL.";
+                    citizenMsg.className = "status-msg info";
+                    
+                    let citizenData = null;
+                    if (!snapCitizen.empty) {
+                        citizenData = snapCitizen.docs[0].data();
+                    }
+
+                    // Budowanie struktury zakładek dla Portalu Obywatelskiego
+                    let htmlContent = `
+                        <div class="tabs-nav">
+                            <button type="button" class="tab-btn active" onclick="switchPortalTab('portal-tab-citizen')">1. Dane Obywatela</button>
+                            <button type="button" class="tab-btn" onclick="switchPortalTab('portal-tab-vehicle')">2. Przypisany Pojazd</button>
+                            <button type="button" class="tab-btn" onclick="switchPortalTab('portal-tab-history')">3. Historia Mandatów i Zarzutów</button>
+                        </div>
+                    `;
+
+                    // ZAKŁADKA 1: Dane Obywatela
+                    htmlContent += `<div id="portal-tab-citizen" class="tab-pane active">`;
+                    htmlContent += `<h3 style="margin-top:0; color:var(--neon-blue);">[ DANE TOŻSAMOŚCI I STATUSY ]</h3>`;
+                    if (citizenData) {
+                        let statusBadge = `<span class="badge-tag badge-success">${citizenData.status || 'Czysty'}</span>`;
+                        if(citizenData.status === 'Poszukiwany listem gończym' || citizenData.status === 'Zatrzymany') {
+                            statusBadge = `<span class="badge-tag badge-danger">${citizenData.status}</span>`;
+                        } else if(citizenData.status === 'Obserwowany') {
+                            statusBadge = `<span class="badge-tag badge-warning">${citizenData.status}</span>`;
+                        }
+
+                        let pjBadge = citizenData.prawoJazdy === 'Nieaktywne' ? 
+                            `<span class="badge-tag badge-danger">Nieaktywne</span>` : 
+                            `<span class="badge-tag badge-success">Aktywne</span>`;
+
+                        htmlContent += `
+                            <p><strong>Imię i Nazwisko:</strong> ${citizenData.imie} ${citizenData.nazwisko}</p>
+                            <p><strong>PESEL:</strong> ${citizenData.pesel}</p>
+                            <p><strong>Adres zamieszkania:</strong> ${citizenData.adres}</p>
+                            <p><strong>Przypisane pojazdy:</strong> ${citizenData.pojazdy || 'Brak'}</p>
+                            <p><strong>Prawo Jazdy:</strong> ${pjBadge}</p>
+                            <p><strong>Status Operacyjny:</strong> ${statusBadge}</p>
+                        `;
+                    } else {
+                        htmlContent += `<p>Brak szczegółowych danych osobowych w kartotece.</p>`;
+                    }
+                    htmlContent += `</div>`;
+
+                    // ZAKŁADKA 2: Przypisany Pojazd
+                    htmlContent += `<div id="portal-tab-vehicle" class="tab-pane">`;
+                    htmlContent += `<h3 style="margin-top:0; color:var(--neon-green);">[ DANE PRZYPISANYCH POJAZDÓW ]</h3>`;
+                    
+                    let firstPlate = (citizenData && citizenData.pojazdy && citizenData.pojazdy !== "Brak") ? citizenData.pojazdy.split(',')[0].trim() : "";
+                    if(firstPlate) {
+                        const qVeh = query(collection(db, "pojazdy"), where("rejestracja", "==", firstPlate));
+                        const snapVeh = await getDocs(qVeh);
+                        if(!snapVeh.empty) {
+                            const vData = snapVeh.docs[0].data();
+                            let dowodBadge = vData.statusDowodu === 'Ważny' ? 
+                                `<span class="badge-tag badge-success">${vData.statusDowodu}</span>` : 
+                                `<span class="badge-tag badge-danger">${vData.statusDowodu}</span>`;
+
+                            htmlContent += `
+                                <p><strong>Marka:</strong> ${vData.marka}</p>
+                                <p><strong>Model:</strong> ${vData.model}</p>
+                                <p><strong>Numer Rejestracyjny:</strong> ${vData.rejestracja}</p>
+                                <p><strong>Kolor:</strong> ${vData.kolor || 'Brak danych'}</p>
+                                <p><strong>Status Dowodu Rejestracyjnego:</strong> ${dowodBadge}</p>
+                            `;
+                        } else {
+                            htmlContent += `<p style="color:var(--neon-yellow);">Pojazd o rejestracji ${firstPlate} nie został znaleziony w bazie pojazdów.</p>`;
+                        }
+                    } else {
+                        htmlContent += `<p style="color:var(--text-muted);">Brak przypisanych pojazdów w kartotece obywatela.</p>`;
+                    }
+                    htmlContent += `</div>`;
+
+                    // ZAKŁADKA 3: Historia Mandatów i Zarzutów
+                    htmlContent += `<div id="portal-tab-history" class="tab-pane">`;
+                    htmlContent += `<h4 style="color:var(--neon-red); margin-top:0;">[ HISTORIA MANDATÓW ]</h4>`;
+
+                    let citizenTotalPln = 0;
+                    let citizenTotalPoints = 0;
+                    let ticketsArray = [];
+
+                    if (!snapTickets.empty) {
+                        snapTickets.forEach((docSnap) => {
+                            const t = docSnap.data();
+                            let kwotaStr = t.kwota || "0 PLN";
+                            let priceMatch = kwotaStr.match(/(\d+)/);
+                            let amountNum = priceMatch ? parseInt(priceMatch[1]) : 0;
+                            citizenTotalPln += amountNum;
+
+                            let pointsNum = 0;
+                            let fullText = (t.powod || "") + " " + (t.kwota || "");
+                            let ptsMatch = fullText.match(/(\d+)\s*pkt/i);
+                            if(ptsMatch) {
+                                pointsNum = parseInt(ptsMatch[1]);
+                            }
+
+                            // Sprawdzenie czy minął rok od wystawienia mandatu
+                            const issueDate = parseTicketDate(t.data_wystawienia);
+                            const oneYearAgo = new Date();
+                            oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
+                            const isPointsExpired = issueDate < oneYearAgo;
+
+                            let effectivePoints = isPointsExpired ? 0 : pointsNum;
+                            citizenTotalPoints += effectivePoints;
+
+                            ticketsArray.push({
+                                data: t.data_wystawienia || 'Brak daty',
+                                rejestracja: t.rejestracja || 'Brak',
+                                powod: t.powod || 'Brak',
+                                kwota: t.kwota || '0 PLN',
+                                pointsNum: pointsNum,
+                                isPointsExpired: isPointsExpired
+                            });
+                        });
+                    }
+
+                    // Kafelki podsumowania dla obywatela
+                    htmlContent += `
+                        <div class="summary-box">
+                            <div class="summary-item">
+                                <span style="color: var(--text-muted); font-size: 0.8rem;">SUMA KWOT (PLN):</span>
+                                <div id="citizen-summary-total-pln" class="val" style="color: var(--neon-red);">${citizenTotalPln} PLN</div>
+                            </div>
+                            <div class="summary-item">
+                                <span style="color: var(--text-muted); font-size: 0.8rem;">SUMA PUNKTÓW KARNYCH (AKTUALNE):</span>
+                                <div id="citizen-summary-total-points" class="val" style="color: var(--neon-yellow);">${citizenTotalPoints} pkt</div>
+                            </div>
+                        </div>
+                    `;
+
+                    if (ticketsArray.length > 0) {
+                        // Wyszukiwarka po stronie obywatela
+                        htmlContent += `<input type="text" id="citizen-ticket-search" placeholder="Szukaj w historii mandatów (data, pojazd, powód, kwota)..." onkeyup="filterCitizenTickets()" style="margin-bottom: 15px;">`;
+                        htmlContent += `<div id="citizen-tickets-container">`;
+                        
+                        ticketsArray.forEach(t => {
+                            const searchStr = `${t.data} ${t.rejestracja} ${t.powod} ${t.kwota}`.toLowerCase();
+                            htmlContent += `
+                                <div class="citizen-ticket-card" data-search="${searchStr}" style="background: rgba(248, 113, 113, 0.05); padding: 14px; margin-bottom: 12px; border-left: 3px solid var(--neon-red); border-radius: 10px;">
+                                    <p style="margin: 0 0 4px 0;"><strong>Data:</strong> ${t.data}</p>
+                                    <p style="margin: 0 0 4px 0;"><strong>Pojazd:</strong> ${t.rejestracja}</p>
+                                    <p style="margin: 0 0 4px 0;"><strong>Wykroczenie:</strong> ${t.powod}</p>
+                                    <p style="margin: 0;"><strong>Sankcja:</strong> ${t.kwota} ${t.pointsNum > 0 ? (t.isPointsExpired ? `<span style="color: var(--neon-yellow); margin-left: 8px;">(Punkty wygasłe po 1 roku: 0 / ${t.pointsNum} pkt)</span>` : `(Punkty: ${t.pointsNum} pkt)`) : ''}</p>
+                                </div>
+                            `;
+                        });
+                        htmlContent += `</div>`;
+                    } else {
+                        htmlContent += `<p style="color:var(--neon-green);">Brak wystawionych mandatów.</p>`;
+                    }
+
+                    htmlContent += `<h4 style="color:var(--neon-purple); margin-top: 20px;">[ ZARZUTY FORMALNE (KW / KK) ]</h4>`;
+
+                    if (!snapCharges.empty) {
+                        snapCharges.forEach((doc) => {
+                            const c = doc.data();
+                            let badgeClass = c.kodeks === 'KK' ? 'badge-danger' : 'badge-warning';
+                            htmlContent += `
+                                <div style="background: rgba(192, 132, 252, 0.05); padding: 14px; margin-bottom: 12px; border-left: 3px solid var(--neon-purple); border-radius: 10px;">
+                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                                        <span class="badge-tag ${badgeClass}">${c.kodeks} - ${c.art}</span>
+                                        <span style="font-size: 0.75rem; color: var(--text-muted);">${c.data_wystawienia}</span>
+                                    </div>
+                                    <p style="margin: 0 0 4px 0;"><strong>Czyn:</strong> ${c.opis}</p>
+                                    <p style="margin: 0;"><strong>Zagrożenie / Kara:</strong> ${c.kara}</p>
+                                </div>
+                            `;
+                        });
+                    } else {
+                        htmlContent += `<p style="color:var(--neon-green);">Brak zarejestrowanych zarzutów z KW / KK.</p>`;
+                    }
+                    htmlContent += `</div>`;
+
+                    resultsBox.innerHTML = htmlContent;
+                    resultsBox.style.display = 'block';
+                }
+            } catch (error) {
+                console.error(error);
+                citizenMsg.textContent = "BŁĄD SYSTEMOWY: Sprawdź reguły bazy danych.";
+                citizenMsg.className = "status-msg error";
+            }
+        });
+    </script>
+</body>
+</html>
